@@ -7,7 +7,7 @@
   <title>Nikah Invitation – Muzeeb &amp; Habeeba </title>
   <meta name="description"
     content="With the blessings of Almighty Allah, you are joyfully invited to the Nikah ceremony of Shaik Muzeeb & Mohammed Habeeba Khatun — 20 December 2026." />
-  <meta property="og:title" content="Nikah Invitation – Shaik Muzeeb & Mohammed Habeeba Khatun" />
+  <meta property="og:title" content="Nikah Invitation – Habeeba & Muzeeb" />
   <meta property="og:description"
     content="Join us for the Nikah ceremony on 20 December 2026 at Sri Achyutha Subrahmanyam Kalyana Mandapam. Tap to enter." />
   <meta property="og:type" content="website" />
@@ -981,6 +981,64 @@
       display: flex;
     }
 
+    /* ── Scroll-down indicator ── */
+    .scroll-hint {
+      position: fixed;
+      bottom: 2.2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 55;
+      display: flex;
+      align-items: center;
+      gap: .9rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .7s ease;
+    }
+
+    .scroll-hint.show {
+      opacity: 1;
+    }
+
+    .scroll-hint.hide {
+      opacity: 0;
+    }
+
+    .scroll-hint-label {
+      font-family: "Cinzel", serif;
+      font-size: .72rem;
+      letter-spacing: .32em;
+      text-transform: uppercase;
+      color: var(--gold-pale);
+      text-shadow: 0 2px 8px rgba(6, 36, 25, .6);
+      white-space: nowrap;
+    }
+
+    .scroll-arrow {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      align-items: center;
+    }
+
+    .scroll-arrow svg {
+      display: block;
+      animation: arrowBounce 1.5s ease-in-out infinite;
+    }
+
+    .scroll-arrow svg:nth-child(2) {
+      animation-delay: .22s;
+    }
+
+    .scroll-arrow svg:nth-child(3) {
+      animation-delay: .44s;
+    }
+
+    @keyframes arrowBounce {
+      0%, 100% { opacity: .25; transform: translateY(0); }
+      50%       { opacity: 1;   transform: translateY(4px); }
+    }
+
     /* Scroll reveal */
     .reveal {
       opacity: 0;
@@ -1168,6 +1226,37 @@
   </div>
   <div class="light-flood" aria-hidden="true"></div>
 
+  <!-- ══════════ SCROLL HINT ══════════ -->
+  <div class="scroll-hint" id="scrollHint" aria-hidden="true">
+    <!-- left arrows -->
+    <div class="scroll-arrow">
+      <svg width="18" height="10" viewBox="0 0 18 10" fill="none">
+        <polyline points="1,1 9,9 17,1" stroke="#F6E27A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <svg width="18" height="10" viewBox="0 0 18 10" fill="none">
+        <polyline points="1,1 9,9 17,1" stroke="#C9A227" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <svg width="18" height="10" viewBox="0 0 18 10" fill="none">
+        <polyline points="1,1 9,9 17,1" stroke="#8A6D1C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+
+    <span class="scroll-hint-label">Scroll</span>
+
+    <!-- right arrows -->
+    <div class="scroll-arrow">
+      <svg width="18" height="10" viewBox="0 0 18 10" fill="none">
+        <polyline points="1,1 9,9 17,1" stroke="#F6E27A" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <svg width="18" height="10" viewBox="0 0 18 10" fill="none">
+        <polyline points="1,1 9,9 17,1" stroke="#C9A227" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <svg width="18" height="10" viewBox="0 0 18 10" fill="none">
+        <polyline points="1,1 9,9 17,1" stroke="#8A6D1C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+  </div>
+
   <!-- ══════════ INVITATION CONTENT ══════════ -->
   <main class="invite">
 
@@ -1201,17 +1290,21 @@
         <use href="#divider" />
       </svg>
 
+      <p class="blessing-line ital reveal">With blessings of Late Mrs &amp; Mr. Haji Mohammed Mahaboob Doula Saheb</p>
+      
+      
+
       <div class="family-cards">
         <div class="family-card reveal">
           <p class="eyebrow">Parents of the Bride</p>
           <p class="family-name script gold-text">Mrs &amp; Mr Rafiyuddin</p>
         </div>
       </div>
+      
     </section>
 
     <!-- Section 3 · Nikah Details -->
     <section id="details">
-      <p class="blessing-line ital reveal">With blessings of Late Mrs &amp; Mr. Haji Mohammed Mahaboob Doula Saheb</p>
       <p class="eyebrow reveal">Nikah Ceremony</p>
       <svg class="divider reveal" viewBox="0 0 260 26" aria-hidden="true">
         <use href="#divider" />
@@ -1405,6 +1498,9 @@
           document.documentElement.classList.remove("locked");
           body.classList.add("revealed");
           gate.classList.add("fade-out");
+          // Show the scroll hint
+          var sh = document.getElementById("scrollHint");
+          setTimeout(function () { if (sh) sh.classList.add("show"); }, 1200);
           setTimeout(function () { gate.style.display = "none"; }, 1100);
           initReveals();
           setTimeout(startAutoScroll, 1800);   // <-- add this: waits for the content to fade in
@@ -1471,6 +1567,16 @@
       ["touchmove", "wheel", "keydown"].forEach(function (evt) {
         window.addEventListener(evt, stopAutoScroll, { passive: true });
       });
+
+      /* Hide scroll hint once user scrolls past the first section */
+      var scrollHintEl = document.getElementById("scrollHint");
+      window.addEventListener("scroll", function () {
+        if (!scrollHintEl) return;
+        if (window.scrollY > 80) {
+          scrollHintEl.classList.remove("show");
+          scrollHintEl.classList.add("hide");
+        }
+      }, { passive: true });
 
       /* ── Scroll-triggered fade-up reveals ── */
       function initReveals() {
