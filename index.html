@@ -569,21 +569,40 @@
       line-height: 1.7;
     }
 
-    /* Names inside gilded frame */
+    /* Names inside gilded frame – now a full-bleed photo card */
     .names-frame {
       position: relative;
       max-width: 430px;
       margin: 2rem auto 0;
-      padding: 3.2rem 1.6rem 3rem;
+      padding: 0;
+      border-radius: 20px;
+      overflow: hidden;
+      border: 3px solid rgba(201, 162, 39, .75);
+      box-shadow: 0 0 0 1px rgba(138, 109, 28, .4), 0 20px 48px rgba(58, 45, 18, .28);
+      background-image: url('couple.jpeg');
+      background-size: cover;
+      background-position: center top;
+      /* Tall enough to show the photo beautifully */
+      min-height: min(560px, 90vw);
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-end;
     }
 
+    /* Dark gradient overlay so text stays readable over the photo */
     .names-frame::before {
       content: "";
       position: absolute;
       inset: 0;
-      border-radius: 2px;
-      background: linear-gradient(165deg, rgba(255, 253, 244, .9), rgba(242, 231, 206, .65));
-      box-shadow: inset 0 0 0 1px rgba(138, 109, 28, .5), inset 0 0 0 5px rgba(255, 253, 244, .85), inset 0 0 0 6px rgba(138, 109, 28, .35), 0 14px 30px rgba(58, 45, 18, .12);
+      border-radius: inherit;
+      background: linear-gradient(
+        to bottom,
+        rgba(11, 61, 46, 0.08) 0%,
+        rgba(11, 61, 46, 0.12) 40%,
+        rgba(11, 61, 46, 0.72) 70%,
+        rgba(6, 36, 25, 0.90) 100%
+      );
+      pointer-events: none;
     }
 
     .names-frame>* {
@@ -591,13 +610,19 @@
       z-index: 1;
     }
 
+    /* Inner text wrapper that sits at the bottom of the photo */
+    .names-frame-inner {
+      padding: 2rem 1.6rem 2.4rem;
+      text-align: center;
+    }
+
     .name-label {
       font-family: "Cinzel", serif;
       font-size: .68rem;
       letter-spacing: .38em;
       text-transform: uppercase;
-      color: var(--gold-ink);
-      opacity: .9;
+      color: var(--gold-pale);
+      opacity: 1;
     }
 
     .couple-name {
@@ -605,7 +630,8 @@
       line-height: 1.35;
       display: block;
       margin: .3rem 0;
-      color: var(--ink);
+      color: var(--gold-pale);
+      text-shadow: 0 2px 10px rgba(6, 36, 25, .7);
     }
 
     .amp-ornament {
@@ -614,6 +640,7 @@
       font-size: 2rem;
       display: block;
       margin: .1rem 0;
+      color: var(--gold-bright);
     }
 
     /* Family cards */
@@ -780,6 +807,11 @@
       color: var(--gold-pale);
       display: block;
       margin-top: .45rem;
+    }
+
+    /* couple-photo is hidden – the image is now the names-frame background */
+    .couple-photo {
+      display: none;
     }
 
     /* Venue */
@@ -1152,11 +1184,13 @@
         ceremony&nbsp;of</p>
 
       <div class="names-frame reveal">
-        <span class="name-label">Bride</span>
-        <span class="couple-name script gold-text">Habeeba</span>
-        <span class="amp-ornament gold-text">&amp;</span>
-        <span class="name-label">Groom</span>
-        <span class="couple-name script gold-text">Muzeeb</span>
+        <div class="names-frame-inner">
+          <span class="name-label">Bride</span>
+          <span class="couple-name script gold-text">Habeeba</span>
+          <span class="amp-ornament gold-text">&amp;</span>
+          <span class="name-label">Groom</span>
+          <span class="couple-name script gold-text">Muzeeb</span>
+        </div>
       </div>
     </section>
 
@@ -1373,6 +1407,7 @@
           gate.classList.add("fade-out");
           setTimeout(function () { gate.style.display = "none"; }, 1100);
           initReveals();
+          setTimeout(startAutoScroll, 1800);   // <-- add this: waits for the content to fade in
         }, revealDelay);
       }
 
@@ -1389,6 +1424,52 @@
         icoOn.style.display = audio.muted ? "none" : "block";
         icoOff.style.display = audio.muted ? "block" : "none";
         muteBtn.setAttribute("aria-label", audio.muted ? "Unmute nasheed" : "Mute nasheed");
+      });
+
+
+
+      /* ── Automatic scrolling after gate opening ── */
+      var autoScrolling = false;
+      var autoRAF = null;
+
+      function stopAutoScroll() {
+        autoScrolling = false;
+        if (autoRAF) cancelAnimationFrame(autoRAF);
+        document.documentElement.style.scrollBehavior = "";
+      }
+
+      function startAutoScroll() {
+        if (reduceMotion) return;
+
+        var scroller = document.scrollingElement || document.documentElement;
+        scroller.style.scrollBehavior = "auto";
+        scroller.scrollTop = 0;
+
+        var speed = 45;            // pixels per second (lower = slower, try 30–70)
+        var pos = 0;
+        var last = null;
+        autoScrolling = true;
+        console.log("autoscroll started; page height:", scroller.scrollHeight);
+
+        function step(now) {
+          if (!autoScrolling) return;
+          if (last === null) last = now;
+          var dt = (now - last) / 1000;
+          last = now;
+
+          pos += speed * dt;
+          var maxScroll = scroller.scrollHeight - window.innerHeight;
+          scroller.scrollTop = pos;
+
+          if (pos >= maxScroll) { stopAutoScroll(); return; }
+          autoRAF = requestAnimationFrame(step);
+        }
+        autoRAF = requestAnimationFrame(step);
+      }
+
+      /* Guest takes over: touching or scrolling stops autoscroll */
+      ["touchmove", "wheel", "keydown"].forEach(function (evt) {
+        window.addEventListener(evt, stopAutoScroll, { passive: true });
       });
 
       /* ── Scroll-triggered fade-up reveals ── */
